@@ -7,5 +7,6 @@
     <file url="file://$PROJECT_DIR$/migrations/0004_create_payments.up.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/migrations/0005_audit_wallet_and_relations.up.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/migrations/0006_defaults_and_triggers.up.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/migrations/000X_drop_core_tables.down.sql" dialect="PostgreSQL" />
   </component>
 </project>

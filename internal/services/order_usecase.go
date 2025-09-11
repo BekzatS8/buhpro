@@ -1,10 +1,10 @@
-package usecase
+package services
 
 import (
 	"context"
 	"time"
 
-	"github.com/BekzatS8/buhpro/internal/domain"
+	"github.com/BekzatS8/buhpro/internal/models"
 	"github.com/BekzatS8/buhpro/internal/repository"
 	"github.com/google/uuid"
 )
@@ -18,7 +18,7 @@ func NewOrderService(or repository.OrderRepo, pr repository.PaymentRepo) *OrderS
 	return &OrderService{orderRepo: or, paymentRepo: pr}
 }
 
-func (s *OrderService) Create(ctx context.Context, o *domain.Order) error {
+func (s *OrderService) Create(ctx context.Context, o *models.Order) error {
 	o.ID = uuid.NewString()
 	o.Status = "draft"
 	now := time.Now()
@@ -27,15 +27,15 @@ func (s *OrderService) Create(ctx context.Context, o *domain.Order) error {
 	return s.orderRepo.Create(ctx, o)
 }
 
-func (s *OrderService) GetByID(ctx context.Context, id string) (*domain.Order, error) {
+func (s *OrderService) GetByID(ctx context.Context, id string) (*models.Order, error) {
 	return s.orderRepo.GetByID(ctx, id)
 }
 
-func (s *OrderService) List(ctx context.Context, filters map[string]string, page, perPage int) ([]*domain.Order, int, error) {
+func (s *OrderService) List(ctx context.Context, filters map[string]string, page, perPage int) ([]*models.Order, int, error) {
 	return s.orderRepo.List(ctx, filters, page, perPage)
 }
 
-func (s *OrderService) Update(ctx context.Context, o *domain.Order) error {
+func (s *OrderService) Update(ctx context.Context, o *models.Order) error {
 	// ensure not published yet
 	orig, err := s.orderRepo.GetByID(ctx, o.ID)
 	if err != nil {
@@ -68,9 +68,9 @@ type ServiceError struct{ Msg string }
 func (e *ServiceError) Error() string { return e.Msg }
 
 // Publish: create payment record and set order to PENDING_PAYMENT
-func (s *OrderService) Publish(ctx context.Context, orderID string, payerID string, amount int64) (*domain.Payment, error) {
+func (s *OrderService) Publish(ctx context.Context, orderID string, payerID string, amount int64) (*models.Payment, error) {
 	// create payment
-	p := &domain.Payment{
+	p := &models.Payment{
 		ID:          uuid.NewString(),
 		UserID:      &payerID,
 		RelatedType: "order_publish",

@@ -1,4 +1,4 @@
-package usecase
+package services
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/BekzatS8/buhpro/internal/domain"
+	"github.com/BekzatS8/buhpro/internal/models"
 	"github.com/BekzatS8/buhpro/internal/repository"
 )
 
@@ -20,7 +20,7 @@ func NewBidService(br repository.BidRepo, pr repository.PaymentRepo) *BidService
 	return &BidService{bidRepo: br, paymentRepo: pr}
 }
 
-func (s *BidService) Create(ctx context.Context, b *domain.Bid) error {
+func (s *BidService) Create(ctx context.Context, b *models.Bid) error {
 	// prepare bid
 	b.ID = uuid.NewString()
 	b.Status = "pending_payment"
@@ -36,7 +36,7 @@ func (s *BidService) Create(ctx context.Context, b *domain.Bid) error {
 	fmt.Printf("BidService.Create: bid inserted OK, id=%s\n", b.ID)
 
 	// prepare payment
-	p := &domain.Payment{
+	p := &models.Payment{
 		ID:          uuid.NewString(),
 		UserID:      &b.ExecutorID,
 		RelatedType: "bid_fee",
@@ -69,11 +69,11 @@ func (s *BidService) Pay(ctx context.Context, bidID string) error {
 
 // New methods required by handler:
 
-func (s *BidService) ListByOrder(ctx context.Context, orderID string) ([]*domain.Bid, error) {
+func (s *BidService) ListByOrder(ctx context.Context, orderID string) ([]*models.Bid, error) {
 	return s.bidRepo.ListByOrder(ctx, orderID)
 }
 
-func (s *BidService) GetByID(ctx context.Context, id string) (*domain.Bid, error) {
+func (s *BidService) GetByID(ctx context.Context, id string) (*models.Bid, error) {
 	return s.bidRepo.GetByID(ctx, id)
 }
 

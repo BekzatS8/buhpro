@@ -4,16 +4,16 @@ import (
 	"context"
 	"time"
 
-	"github.com/BekzatS8/buhpro/internal/domain"
+	"github.com/BekzatS8/buhpro/internal/models"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type UserRepo interface {
-	Create(u *domain.User) error
-	GetByEmail(email string) (*domain.User, error)
-	GetByID(id string) (*domain.User, error)
+	Create(u *models.User) error
+	GetByEmail(email string) (*models.User, error)
+	GetByID(id string) (*models.User, error)
 	Count() (int, error)
-	Update(u *domain.User) error
+	Update(u *models.User) error
 }
 
 type pgUserRepo struct {
@@ -24,7 +24,7 @@ func NewUserRepo(db *pgxpool.Pool) UserRepo {
 	return &pgUserRepo{db: db}
 }
 
-func (r *pgUserRepo) Create(u *domain.User) error {
+func (r *pgUserRepo) Create(u *models.User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	_, err := r.db.Exec(ctx, `
@@ -34,10 +34,10 @@ func (r *pgUserRepo) Create(u *domain.User) error {
 	return err
 }
 
-func (r *pgUserRepo) GetByEmail(email string) (*domain.User, error) {
+func (r *pgUserRepo) GetByEmail(email string) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	u := &domain.User{}
+	u := &models.User{}
 	row := r.db.QueryRow(ctx, `SELECT id,email,phone,full_name,role,status,password_hash,created_at,updated_at FROM users WHERE email=$1`, email)
 	if err := row.Scan(&u.ID, &u.Email, &u.Phone, &u.FullName, &u.Role, &u.Status, &u.PasswordHash, &u.CreatedAt, &u.UpdatedAt); err != nil {
 		return nil, err
@@ -45,10 +45,10 @@ func (r *pgUserRepo) GetByEmail(email string) (*domain.User, error) {
 	return u, nil
 }
 
-func (r *pgUserRepo) GetByID(id string) (*domain.User, error) {
+func (r *pgUserRepo) GetByID(id string) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	u := &domain.User{}
+	u := &models.User{}
 	row := r.db.QueryRow(ctx, `SELECT id,email,phone,full_name,role,status,password_hash,created_at,updated_at FROM users WHERE id=$1`, id)
 	if err := row.Scan(&u.ID, &u.Email, &u.Phone, &u.FullName, &u.Role, &u.Status, &u.PasswordHash, &u.CreatedAt, &u.UpdatedAt); err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ func (r *pgUserRepo) Count() (int, error) {
 	return cnt, nil
 }
 
-func (r *pgUserRepo) Update(u *domain.User) error {
+func (r *pgUserRepo) Update(u *models.User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 

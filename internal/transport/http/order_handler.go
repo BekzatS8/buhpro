@@ -4,17 +4,17 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/BekzatS8/buhpro/internal/domain"
-	"github.com/BekzatS8/buhpro/internal/usecase"
+	"github.com/BekzatS8/buhpro/internal/models"
+	"github.com/BekzatS8/buhpro/internal/services"
 	"github.com/gin-gonic/gin"
 )
 
 // structure depends on your wiring
 type OrderHandler struct {
-	svc *usecase.OrderService
+	svc *services.OrderService
 }
 
-func NewOrderHandler(s *usecase.OrderService) *OrderHandler { return &OrderHandler{svc: s} }
+func NewOrderHandler(s *services.OrderService) *OrderHandler { return &OrderHandler{svc: s} }
 
 func (h *OrderHandler) RegisterRoutes(rg *gin.RouterGroup) {
 	rg.POST("", h.Create)
@@ -32,7 +32,7 @@ func (h *OrderHandler) RegisterRoutes(rg *gin.RouterGroup) {
 }
 
 func (h *OrderHandler) Create(c *gin.Context) {
-	var req domain.Order
+	var req models.Order
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
@@ -78,7 +78,7 @@ func (h *OrderHandler) GetByID(c *gin.Context) {
 
 func (h *OrderHandler) Update(c *gin.Context) {
 	id := c.Param("id")
-	var req domain.Order
+	var req models.Order
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return

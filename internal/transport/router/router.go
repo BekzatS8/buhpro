@@ -6,8 +6,8 @@ import (
 
 	"github.com/BekzatS8/buhpro/internal/middleware"
 	"github.com/BekzatS8/buhpro/internal/repository"
+	"github.com/BekzatS8/buhpro/internal/services"
 	httpHandlers "github.com/BekzatS8/buhpro/internal/transport/http"
-	"github.com/BekzatS8/buhpro/internal/usecase"
 	"github.com/BekzatS8/buhpro/pkg/config"
 )
 
@@ -17,18 +17,18 @@ type AppDeps struct {
 	Cfg *config.Config
 }
 
-// RegisterRoutes wires repos -> services -> handlers and registers routes to gin.Engine
 func RegisterRoutes(deps *AppDeps, r *gin.Engine) {
-	// repositories
+	// repos
 	userRepo := repository.NewUserRepo(deps.DB)
+	refreshRepo := repository.NewRefreshRepo(deps.DB)
 	orderRepo := repository.NewOrderRepo(deps.DB)
 	bidRepo := repository.NewBidRepo(deps.DB)
 	paymentRepo := repository.NewPaymentRepo(deps.DB)
 
-	// usecases / services
-	userUC := usecase.NewUserUsecase(userRepo, deps.Cfg.JWTSecret, deps.Cfg.JTTTLMin)
-	orderSvc := usecase.NewOrderService(orderRepo, paymentRepo)
-	bidSvc := usecase.NewBidService(bidRepo, paymentRepo)
+	// usecases
+	userUC := services.NewUserUsecase(userRepo, refreshRepo, deps.Cfg.JWTSecret, deps.Cfg.JTTTLMin, deps.Cfg.RefreshTTLDays)
+	orderSvc := services.NewOrderService(orderRepo, paymentRepo)
+	bidSvc := services.NewBidService(bidRepo, paymentRepo)
 
 	// handlers
 	userHandler := httpHandlers.NewUserHandler(userUC)
@@ -40,21 +40,27 @@ func RegisterRoutes(deps *AppDeps, r *gin.Engine) {
 
 	api := r.Group("/api/v1")
 
-	// Auth endpoints (we reuse userHandler.RegisterRoutes that registers register/login/count)
+	// Auth endpoints (register/login/refresh are public)
 	auth := api.Group("/auth")
 	{
 		auth.POST("/register", userHandler.Register)
 		auth.POST("/login", userHandler.Login)
-		// If you later implement refresh/logout/email/phone flows - add them here.
+		auth.POST("/refresh", userHandler.Refresh)
+		// logout - require access token -> protect with authMw
+		authProtected := auth.Group("")
+		authProtected.Use(authMw)
+		{
+			authProtected.POST("/logout", userHandler.Logout)
+		}
 	}
 
 	// Users endpoints (protected)
 	users := api.Group("/users")
 	users.Use(authMw)
 	{
-		users.GET("/me", userHandler.Me)         // implement Me() in user handler if not yet
-		users.PATCH("/me", userHandler.UpdateMe) // implement UpdateMe()
-		users.GET("/count", userHandler.Count)   // you already have Count
+		users.GET("/me", userHandler.Me)
+		users.PATCH("/me", userHandler.UpdateMe)
+		users.GET("/count", userHandler.Count)
 	}
 
 	// Orders
@@ -81,7 +87,7 @@ func RegisterRoutes(deps *AppDeps, r *gin.Engine) {
 		}
 	}
 
-	// Bids routes: create/list under orders, others top-level
+	// Bids under orders (protected)
 	orderBids := api.Group("/orders/:id/bids")
 	orderBids.Use(authMw)
 	{
@@ -89,12 +95,12 @@ func RegisterRoutes(deps *AppDeps, r *gin.Engine) {
 		orderBids.GET("", bidHandler.ListByOrder)
 	}
 
+	// Top-level bids (protected)
 	bids := api.Group("/bids")
 	bids.Use(authMw)
 	{
 		bids.GET("/:id", bidHandler.GetByID)
 		bids.DELETE("/:id", bidHandler.Delete)
 		bids.POST("/:id/pay", bidHandler.Pay)
-		// add shortlist/win/lose endpoints later
 	}
 }

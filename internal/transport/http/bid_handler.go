@@ -5,16 +5,16 @@ import (
 	"github.com/google/uuid"
 	"net/http"
 
-	"github.com/BekzatS8/buhpro/internal/domain"
-	"github.com/BekzatS8/buhpro/internal/usecase"
+	"github.com/BekzatS8/buhpro/internal/models"
+	"github.com/BekzatS8/buhpro/internal/services"
 	"github.com/gin-gonic/gin"
 )
 
 type BidHandler struct {
-	svc *usecase.BidService
+	svc *services.BidService
 }
 
-func NewBidHandler(s *usecase.BidService) *BidHandler { return &BidHandler{svc: s} }
+func NewBidHandler(s *services.BidService) *BidHandler { return &BidHandler{svc: s} }
 
 func (h *BidHandler) RegisterRoutes(rg *gin.RouterGroup) {
 	// Note: when router groups include params (orders/:id/bids) ensure group matches router.RegisterRoutes
@@ -46,7 +46,7 @@ func (h *BidHandler) CreateBid(c *gin.Context) {
 	}
 	fmt.Printf("CreateBid: executorID from ctx = %s\n", executorID)
 
-	var req domain.Bid
+	var req models.Bid
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

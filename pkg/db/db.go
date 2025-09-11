@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/BekzatS8/buhpro/pkg/config"
@@ -11,7 +12,13 @@ import (
 func Connect(cfg *config.Config) (*pgxpool.Pool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	pool, err := pgxpool.New(ctx, cfg.DB_DSN)
+
+	connStr := cfg.DatabaseURL
+	if connStr == "" {
+		return nil, fmt.Errorf("database connection string is empty: cfg.DatabaseURL")
+	}
+
+	pool, err := pgxpool.New(ctx, connStr)
 	if err != nil {
 		return nil, err
 	}

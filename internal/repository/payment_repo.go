@@ -3,13 +3,13 @@ package repository
 import (
 	"context"
 
-	"github.com/BekzatS8/buhpro/internal/domain"
+	"github.com/BekzatS8/buhpro/internal/models"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type PaymentRepo interface {
-	Create(ctx context.Context, p *domain.Payment) error
-	GetByID(ctx context.Context, id string) (*domain.Payment, error)
+	Create(ctx context.Context, p *models.Payment) error
+	GetByID(ctx context.Context, id string) (*models.Payment, error)
 	UpdateStatus(ctx context.Context, id, status string) error
 }
 
@@ -19,7 +19,7 @@ type pgPaymentRepo struct {
 
 func NewPaymentRepo(db *pgxpool.Pool) PaymentRepo { return &pgPaymentRepo{db: db} }
 
-func (r *pgPaymentRepo) Create(ctx context.Context, p *domain.Payment) error {
+func (r *pgPaymentRepo) Create(ctx context.Context, p *models.Payment) error {
 	// make placeholders count match columns (14)
 	q := `INSERT INTO payments (
         id, user_id, organization_id, related_type, related_id,
@@ -70,8 +70,8 @@ func (r *pgPaymentRepo) Create(ctx context.Context, p *domain.Payment) error {
 	).Scan(&p.CreatedAt, &p.UpdatedAt)
 }
 
-func (r *pgPaymentRepo) GetByID(ctx context.Context, id string) (*domain.Payment, error) {
-	p := &domain.Payment{}
+func (r *pgPaymentRepo) GetByID(ctx context.Context, id string) (*models.Payment, error) {
+	p := &models.Payment{}
 	q := `SELECT id,user_id,organization_id,related_type,related_id,provider,provider_payment_id,amount,currency,status,items,idempotency_key,expires_at,webhook_meta,created_at,updated_at FROM payments WHERE id=$1`
 	if err := r.db.QueryRow(ctx, q, id).Scan(
 		&p.ID, &p.UserID, &p.OrganizationID, &p.RelatedType, &p.RelatedID, &p.Provider, &p.ProviderPaymentID, &p.Amount, &p.Currency, &p.Status, &p.Items, &p.IdempotencyKey, &p.ExpiresAt, &p.WebhookMeta, &p.CreatedAt, &p.UpdatedAt,

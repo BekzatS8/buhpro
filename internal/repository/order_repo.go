@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/BekzatS8/buhpro/internal/domain"
+	"github.com/BekzatS8/buhpro/internal/models"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type OrderRepo interface {
-	Create(ctx context.Context, o *domain.Order) error
-	GetByID(ctx context.Context, id string) (*domain.Order, error)
-	List(ctx context.Context, filters map[string]string, page, perPage int) ([]*domain.Order, int, error)
-	Update(ctx context.Context, o *domain.Order) error
+	Create(ctx context.Context, o *models.Order) error
+	GetByID(ctx context.Context, id string) (*models.Order, error)
+	List(ctx context.Context, filters map[string]string, page, perPage int) ([]*models.Order, int, error)
+	Update(ctx context.Context, o *models.Order) error
 	Delete(ctx context.Context, id string) error
 	SetStatus(ctx context.Context, id, status string) error
 	SelectExecutor(ctx context.Context, orderID, bidID string) error
@@ -28,7 +28,7 @@ func NewOrderRepo(db *pgxpool.Pool) OrderRepo {
 	return &pgOrderRepo{db: db}
 }
 
-func (r *pgOrderRepo) Create(ctx context.Context, o *domain.Order) error {
+func (r *pgOrderRepo) Create(ctx context.Context, o *models.Order) error {
 	query := `INSERT INTO orders (id, org_id, client_user_id, title, description, category, subcategory, region,
 		mode_online, deadline, budget_min, budget_max, currency, status, promotion_flags, attachments, chosen_bid_id)
 	VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
@@ -40,8 +40,8 @@ func (r *pgOrderRepo) Create(ctx context.Context, o *domain.Order) error {
 	return err
 }
 
-func (r *pgOrderRepo) GetByID(ctx context.Context, id string) (*domain.Order, error) {
-	o := &domain.Order{}
+func (r *pgOrderRepo) GetByID(ctx context.Context, id string) (*models.Order, error) {
+	o := &models.Order{}
 	query := `SELECT id, org_id, client_user_id, title, description, category, subcategory, region, mode_online,
 		deadline, budget_min, budget_max, currency, status, promotion_flags, attachments, chosen_bid_id, created_at, published_at, updated_at
 		FROM orders WHERE id=$1`
@@ -55,7 +55,7 @@ func (r *pgOrderRepo) GetByID(ctx context.Context, id string) (*domain.Order, er
 	return o, nil
 }
 
-func (r *pgOrderRepo) List(ctx context.Context, filters map[string]string, page, perPage int) ([]*domain.Order, int, error) {
+func (r *pgOrderRepo) List(ctx context.Context, filters map[string]string, page, perPage int) ([]*models.Order, int, error) {
 	var where []string
 	var args []interface{}
 	i := 1
@@ -115,9 +115,9 @@ func (r *pgOrderRepo) List(ctx context.Context, filters map[string]string, page,
 	}
 	defer rows.Close()
 
-	var out []*domain.Order
+	var out []*models.Order
 	for rows.Next() {
-		o := &domain.Order{}
+		o := &models.Order{}
 		if err := rows.Scan(
 			&o.ID, &o.OrgID, &o.ClientUserID, &o.Title, &o.Description, &o.Category, &o.Subcategory, &o.Region, &o.ModeOnline,
 			&o.Deadline, &o.BudgetMin, &o.BudgetMax, &o.Currency, &o.Status, &o.Promotion, &o.Attachments, &o.ChosenBidID,
@@ -130,7 +130,7 @@ func (r *pgOrderRepo) List(ctx context.Context, filters map[string]string, page,
 	return out, total, nil
 }
 
-func (r *pgOrderRepo) Update(ctx context.Context, o *domain.Order) error {
+func (r *pgOrderRepo) Update(ctx context.Context, o *models.Order) error {
 	query := `UPDATE orders SET title=$1, description=$2, category=$3, subcategory=$4, region=$5, mode_online=$6,
 		deadline=$7, budget_min=$8, budget_max=$9, currency=$10, promotion_flags=$11, attachments=$12, updated_at=now()
 		WHERE id=$13 RETURNING updated_at`
