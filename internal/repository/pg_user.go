@@ -13,6 +13,7 @@ type UserRepo interface {
 	GetByEmail(email string) (*domain.User, error)
 	GetByID(id string) (*domain.User, error)
 	Count() (int, error)
+	Update(u *domain.User) error
 }
 
 type pgUserRepo struct {
@@ -63,4 +64,19 @@ func (r *pgUserRepo) Count() (int, error) {
 		return 0, err
 	}
 	return cnt, nil
+}
+
+func (r *pgUserRepo) Update(u *domain.User) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	_, err := r.db.Exec(ctx, `
+		UPDATE users
+		SET full_name = $1,
+			phone = $2,
+			metadata = $3,
+			updated_at = now()
+		WHERE id = $4
+	`, u.FullName, u.Phone, u.Metadata, u.ID)
+	return err
 }

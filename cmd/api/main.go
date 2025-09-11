@@ -8,13 +8,10 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/BekzatS8/buhpro/internal/repository"
-	httpHandlers "github.com/BekzatS8/buhpro/internal/transport/http"
-	"github.com/BekzatS8/buhpro/internal/usecase"
+	"github.com/BekzatS8/buhpro/internal/transport/router"
 	"github.com/BekzatS8/buhpro/pkg/config"
 	"github.com/BekzatS8/buhpro/pkg/db"
 	"github.com/gin-gonic/gin"
-	ginhttp "github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -26,20 +23,24 @@ func main() {
 	}
 	defer pool.Close()
 
-	router := ginhttp.Default()
+	r := gin.Default()
 
-	// build layers
-	userRepo := repository.NewUserRepo(pool)
-	userUC := usecase.NewUserUsecase(userRepo, cfg.JWTSecret, cfg.JTTTLMin)
-	userHandler := httpHandlers.NewUserHandler(userUC)
+	// register app routes (router will create repos/services/handlers)
+	deps := &router.AppDeps{
+		DB:  pool,
+		Cfg: cfg,
+	}
+	router.RegisterRoutes(deps, r)
 
-	api := router.Group("/api/v1")
-	users := api.Group("/users")
-	userHandler.RegisterRoutes(users)
+	// healthz (keep)
+	r.GET("/healthz", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
+	})
 
-	router.GET("/healthz", func(c *ginhttp.Context) { c.JSON(200, gin.H{"status": "ok"}) })
-
-	srv := &http.Server{Addr: cfg.AppAddr, Handler: router}
+	srv := &http.Server{
+		Addr:    cfg.AppAddr,
+		Handler: r,
+	}
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {

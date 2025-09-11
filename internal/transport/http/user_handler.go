@@ -73,3 +73,61 @@ func (h *UserHandler) Count(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{"users_count": cnt})
 }
+func (h *UserHandler) Me(c *gin.Context) {
+	uidVal, ok := c.Get("user_id")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	uid, ok := uidVal.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user id in context"})
+		return
+	}
+
+	u, err := h.uc.GetProfile(c.Request.Context(), uid)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, u)
+}
+
+// UpdateMe — обновление профиля текущего пользователя
+type updateMeReq struct {
+	FullName *string                `json:"full_name,omitempty"`
+	Phone    *string                `json:"phone,omitempty"`
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
+}
+
+func (h *UserHandler) UpdateMe(c *gin.Context) {
+	uidVal, ok := c.Get("user_id")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	uid, ok := uidVal.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user id in context"})
+		return
+	}
+
+	var req updateMeReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	upd := usecase.UserUpdate{
+		FullName: req.FullName,
+		Phone:    req.Phone,
+		Metadata: req.Metadata,
+	}
+
+	u, err := h.uc.UpdateProfile(c.Request.Context(), uid, upd)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, u)
+}

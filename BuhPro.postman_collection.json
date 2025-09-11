@@ -1,0 +1,613 @@
+{
+  "info": {
+    "name": "BuhPro - Local API",
+    "_postman_id": "buhpro-collection-0001",
+    "description": "Collection for local testing of BuhPro API (http://localhost:8080).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Healthcheck",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/healthz",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "healthz"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Auth / Register (Client)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"client@buhpro.local\",\n  \"password\": \"password123\",\n  \"full_name\": \"Client User\",\n  \"phone\": \"+77000000001\",\n  \"role\": \"client\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Auth / Register (Executor)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"exec@buhpro.local\",\n  \"password\": \"password123\",\n  \"full_name\": \"Executor User\",\n  \"phone\": \"+77000000002\",\n  \"role\": \"executor\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Auth / Login (Client) → set clientToken",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Login returns token\", function () {",
+              "    pm.response.to.have.status(200);",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.token).to.exist;",
+              "    pm.environment.set(\"clientToken\", json.token);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"client@buhpro.local\",\n  \"password\": \"password123\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Auth / Login (Executor) → set execToken",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Login returns token\", function () {",
+              "    pm.response.to.have.status(200);",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.token).to.exist;",
+              "    pm.environment.set(\"execToken\", json.token);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"exec@buhpro.local\",\n  \"password\": \"password123\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Users / Count",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/count",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "count"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Users / Me (Client)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{clientToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Users / UpdateMe (Client)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{clientToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Client User Updated\",\n  \"phone\": \"+77009990000\",\n  \"metadata\": { \"company\": \"ClientCo\" }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Orders / Create (Client) → set orderId",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Created order\", function () {",
+              "    pm.response.to.have.status(201);",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.id).to.exist;",
+              "    pm.environment.set(\"orderId\", json.id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{clientToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Нужна помощь с налогами\",\n  \"description\": \"Подготовить отчетность за квартал\",\n  \"category\": \"отчетность\",\n  \"mode_online\": true,\n  \"deadline\": null,\n  \"budget_min\": 50000,\n  \"budget_max\": 100000,\n  \"currency\": \"KZT\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/orders",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "orders"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Orders / List",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/orders?page=1&per_page=20",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "orders"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "per_page",
+              "value": "20"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Orders / Get by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/orders/{{orderId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "orders",
+            "{{orderId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Bids / Create (Executor) → set bidId",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Created bid\", function () {",
+              "    pm.response.to.have.status(201);",
+              "    var json = pm.response.json();",
+              "    // our handler returns the bid body (with id) — save it",
+              "    pm.environment.set(\"bidId\", json.id ? json.id : json[\"id\"] );",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{execToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cover_text\": \"Могу выполнить в сроки, опыт 5 лет\",\n  \"price\": 70000\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/orders/{{orderId}}/bids",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "orders",
+            "{{orderId}}",
+            "bids"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Bids / List by Order (Client) — sees paid bids only",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{clientToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/orders/{{orderId}}/bids",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "orders",
+            "{{orderId}}",
+            "bids"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Bids / Pay (Executor) — pay for bid to make it visible",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{execToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/bids/{{bidId}}/pay",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "bids",
+            "{{bidId}}",
+            "pay"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Orders / Publish (Client) -> create payment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Publish created payment\", function () {",
+              "    pm.response.to.have.status(201);",
+              "    var json = pm.response.json();",
+              "    if (json.id) pm.environment.set('paymentId', json.id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{clientToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amount\": 2500\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/orders/{{orderId}}/publish",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "orders",
+            "{{orderId}}",
+            "publish"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Orders / Select Executor (Client)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{clientToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"bid_id\": \"{{bidId}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/orders/{{orderId}}/select-executor",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "orders",
+            "{{orderId}}",
+            "select-executor"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Orders / Start (Client|Executor)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{clientToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/orders/{{orderId}}/start",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "orders",
+            "{{orderId}}",
+            "start"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Orders / Complete (Client)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{clientToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/orders/{{orderId}}/complete",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "orders",
+            "{{orderId}}",
+            "complete"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Orders / History (audit logs)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{clientToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/orders/{{orderId}}/history",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "orders",
+            "{{orderId}}",
+            "history"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
