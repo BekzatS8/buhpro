@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
@@ -19,7 +20,7 @@ type Claims struct {
 func GenerateTokens(secret string, userID, role string, accessTTLMinutes int, refreshTTLDays int) (string, string, error) {
 	now := time.Now()
 
-	// access token
+	// access token (JWT)
 	accessClaims := Claims{
 		UserID:    userID,
 		Role:      role,
@@ -35,23 +36,14 @@ func GenerateTokens(secret string, userID, role string, accessTTLMinutes int, re
 		return "", "", err
 	}
 
-	// refresh token
-	refreshClaims := Claims{
-		UserID:    userID,
-		Role:      role,
-		TokenType: "refresh",
-		RegisteredClaims: jwt.RegisteredClaims{
-			IssuedAt:  jwt.NewNumericDate(now),
-			ExpiresAt: jwt.NewNumericDate(now.Add(time.Hour * 24 * time.Duration(refreshTTLDays))),
-		},
-	}
-	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
-	rt, err := refreshToken.SignedString([]byte(secret))
-	if err != nil {
+	// refresh token — генерируем крипто-стойкий plain (hex)
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
 		return "", "", err
 	}
+	plainRefresh := hex.EncodeToString(b)
 
-	return at, rt, nil
+	return at, plainRefresh, nil
 }
 
 func ParseAccessToken(secret, tokenStr string) (*Claims, error) {

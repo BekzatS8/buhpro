@@ -52,7 +52,6 @@ func (s *BidService) Create(ctx context.Context, b *models.Bid) error {
 	// insert payment
 	if err := s.paymentRepo.Create(ctx, p); err != nil {
 		fmt.Printf("BidService.Create: paymentRepo.Create error: %v\n", err)
-		// optional: rollback bid (delete) if you want in future
 		return err
 	}
 	fmt.Printf("BidService.Create: payment inserted OK, id=%s\n", p.ID)
