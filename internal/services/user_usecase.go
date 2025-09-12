@@ -103,7 +103,6 @@ func (uc *UserUsecase) RepoCount() (int, error) {
 	return uc.repo.Count()
 }
 
-// RefreshTokens accepts a refresh token string, validates it and returns new pair
 func (uc *UserUsecase) RefreshTokens(ctx context.Context, refreshToken string) (string, string, error) {
 	claims, err := auth.ParseRefreshToken(uc.jwtSecret, refreshToken)
 	if err != nil {

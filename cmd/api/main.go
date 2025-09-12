@@ -25,12 +25,12 @@ func main() {
 
 	r := gin.Default()
 
-	// register app routes (router will create repos/services/handlers)
 	deps := &router.AppDeps{
 		DB:  pool,
 		Cfg: cfg,
 	}
-	router.RegisterRoutes(deps, r)
+
+	router.InitAndRegister(deps, r)
 
 	// healthz (keep)
 	r.GET("/healthz", func(c *gin.Context) {
